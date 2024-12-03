@@ -115,7 +115,7 @@ const writeToCSV = (data) => {
   const isFileEmpty =
     fs.existsSync(filePath) && fs.readFileSync(filePath, "utf8").length === 0;
 
-  const csvLine = `${data.date},${data.time},${data.symbol},${data.ltp},${data.lastTradeQuantity},${data.volume}\n`;
+  const csvLine = `${data.date},${data.time},${data.symbol},${data.ltpcon},${data.lastTradeQuantity},${data.volume}\n`;
 
   // Append the data only if the file isn't empty, or create it with the first line
   if (isFileEmpty) {
@@ -244,7 +244,8 @@ function connectWS(instrumentList) {
     try {
       const securityID = binaryData.readUInt32LE(4);
       const ltp = binaryData.readFloatLE(8);
-      const ltpcon = parseFloat(ltp.toFixed(2));
+      const ltpcon = Math.round(ltp * 100) / 100; // Ensure exactly 2 decimal places
+
       const lastTradeQuantity = binaryData.readUInt16LE(12);
       const volume = binaryData.readUInt32LE(22);
       const lastTradeTime = binaryData.readUInt32LE(14);
@@ -263,7 +264,8 @@ function connectWS(instrumentList) {
         .format("HH:mm:ss");
 
       const symbol = displaySymbolByToken(securityID, instrumentList);
-
+      console.log("ltp -> ", ltp);
+      console.log("ltpcon -> ", ltpcon);
       console.log(
         `Symbol: ${symbol}, LTP: ${ltpcon}, Volume: ${volume}, Date: ${date}, Time: ${time} , LTQ : ${lastTradeQuantity} `
       );
